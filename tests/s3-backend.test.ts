@@ -133,7 +133,7 @@ describe("S3Backend — createWriteStream multipart", () => {
     expect(store.uploads.size).toBe(0); // completed uploads are removed from pending map
   });
 
-  it(">5MiB total → multiple parts assembled in order", { timeout: 15000 }, async () => {
+  it(">5MiB total → multiple parts assembled in order", { timeout: 60000 }, async () => {
     const { client, store } = createMockS3();
     const backend = new S3Backend({ client, bucket: "b", prefix: "p/" });
 
@@ -145,7 +145,9 @@ describe("S3Backend — createWriteStream multipart", () => {
     await stream.end();
 
     const expected = Buffer.concat([chunk1, chunk2]);
-    expect(store.objects.get("p/obj.seg")!.body).toEqual(expected);
+    // Use native Buffer.equals (byte compare) — vitest's .toEqual deep-clones
+    // multi-MiB buffers and times out on shared-compute CI runners.
+    expect(store.objects.get("p/obj.seg")!.body.equals(expected)).toBe(true);
   });
 
   it("zero-byte end() falls back to PutObject with empty body", async () => {
