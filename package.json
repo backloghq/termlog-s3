@@ -1,0 +1,67 @@
+{
+  "name": "@backloghq/termlog-s3",
+  "version": "0.1.0",
+  "description": "Amazon S3 storage backend for @backloghq/termlog.",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "type": "module",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch",
+    "lint": "eslint src/ tests/",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage",
+    "test:integration": "S3_INTEGRATION=1 vitest run tests/s3-integration.test.ts tests/termlog-integration.test.ts",
+    "prepublishOnly": "npm run build"
+  },
+  "keywords": [
+    "full-text-search",
+    "termlog",
+    "s3",
+    "storage-backend",
+    "aws"
+  ],
+  "author": "mbocevski",
+  "license": "MIT",
+  "sideEffects": false,
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/backloghq/termlog-s3.git"
+  },
+  "bugs": {
+    "url": "https://github.com/backloghq/termlog-s3/issues"
+  },
+  "homepage": "https://github.com/backloghq/termlog-s3#readme",
+  "engines": {
+    "node": ">=22"
+  },
+  "files": [
+    "dist/",
+    "README.md",
+    "CHANGELOG.md",
+    "LICENSE"
+  ],
+  "dependencies": {
+    "@aws-sdk/client-s3": "^3.800.0"
+  },
+  "peerDependencies": {
+    "@backloghq/termlog": ">=0.1.0"
+  },
+  "devDependencies": {
+    "@backloghq/termlog": "file:../termlog",
+    "@eslint/js": "^10.0.0",
+    "@types/node": "^25.0.0",
+    "@vitest/coverage-v8": "^4.1.2",
+    "eslint": "^10.0.0",
+    "typescript": "~6.0.2",
+    "typescript-eslint": "^8.58.1",
+    "vitest": "^4.1.2"
+  }
+}
