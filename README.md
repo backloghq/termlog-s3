@@ -112,6 +112,17 @@ npm run test:coverage  # Tests with coverage
 npm run test:integration  # Real S3 tests (requires S3_INTEGRATION=1 + credentials)
 ```
 
+### Integration test env vars
+
+| Var | Required | Description |
+|---|---|---|
+| `S3_INTEGRATION=1` | yes | Enables real-S3 tests (otherwise all skipped) |
+| `S3_TEST_BUCKET` | yes | Bucket name |
+| `S3_TEST_REGION` | no | AWS region (default: `us-east-1`) |
+| `S3_TEST_ENDPOINT` | no | Custom endpoint for MinIO / LocalStack |
+| `AWS_PROFILE` | no | AWS credential profile |
+| `S3_INTEGRATION_SLOW=1` | no | Enables pagination stress test (1500 PutObject + 1500 DeleteObject — ~5 s on MinIO, ~60 s + cost on real AWS S3) |
+
 ## License
 
 MIT

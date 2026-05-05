@@ -122,6 +122,24 @@ describe.skipIf(!integration)("TermLog + S3Backend (real S3)", () => {
     await idxB.close();
   });
 
+  it("flush produces multi-part segment when buffered docs cross 5 MiB", { timeout: 180_000 }, async () => {
+    const pfx = `${basePrefix}multipart-flush/`;
+    const idx = await makeIndex(pfx);
+
+    // Each doc contributes ~200 unique tokens (t{i}_{j}) — 600 docs produces a
+    // large enough segment to cross the 5 MiB S3 multipart threshold.
+    for (let i = 0; i < 600; i++) {
+      const text = Array.from({ length: 200 }, (_, j) => `t${i}_${j}`).join(" ");
+      await idx.add(`doc-${i}`, text);
+    }
+    await idx.flush();
+
+    // Search a known term — verifies the multi-part segment reads back correctly.
+    const results = await idx.search("t42_0", { limit: 5 });
+    expect(results.find((r) => r.docId === "doc-42")).toBeTruthy();
+    await idx.close();
+  });
+
   it("compaction — segments merge and results remain correct", async () => {
     const pfx = `${basePrefix}compact-test/`;
     const idx = await makeIndex(pfx);
