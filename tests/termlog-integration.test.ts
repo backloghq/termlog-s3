@@ -77,12 +77,12 @@ describe.skipIf(!integration)("TermLog + S3Backend (real S3)", () => {
     await idx2.close();
   });
 
-  it("delete removes doc from search results across sessions", async () => {
+  it("remove deletes doc from search results across sessions", async () => {
     const pfx = `${basePrefix}delete-test/`;
     const idx1 = await makeIndex(pfx);
     await idx1.add("doc-1", "hello world");
     await idx1.add("doc-2", "hello termlog");
-    await idx1.delete("doc-1");
+    await idx1.remove("doc-1");
     await idx1.close();
 
     const idx2 = await makeIndex(pfx);

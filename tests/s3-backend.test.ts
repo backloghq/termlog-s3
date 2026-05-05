@@ -221,4 +221,44 @@ describe("S3Backend — createWriteStream multipart", () => {
     expect(abortCalled).toBe(true);
     expect(store.objects.has("p/obj.seg")).toBe(false);
   });
+
+  it("UploadPart mid-stream failure — caller must call abort(), adapter does NOT auto-abort", async () => {
+    const { client: mockClient, store } = createMockS3();
+    let uploadPartCallCount = 0;
+    let abortCallCount = 0;
+
+    const interceptClient = {
+      send: async (cmd: object) => {
+        const name = (cmd as { constructor: { name: string } }).constructor.name;
+        if (name === "UploadPartCommand") {
+          uploadPartCallCount++;
+          if (uploadPartCallCount === 2) throw new Error("UploadPart network failure");
+        }
+        if (name === "AbortMultipartUploadCommand") {
+          abortCallCount++;
+        }
+        return mockClient.send(cmd);
+      },
+      destroy: () => {},
+    };
+
+    const backend = new S3Backend({ client: interceptClient as never, bucket: "b", prefix: "p/" });
+    const stream = await backend.createWriteStream("obj.seg");
+
+    // First write > 5 MiB triggers first UploadPart — succeeds.
+    await stream.write(Buffer.alloc(MIN_PART + 1, 0x41));
+    // Second write > 5 MiB triggers second UploadPart — throws.
+    const writeErr = await stream.write(Buffer.alloc(MIN_PART + 1, 0x42)).catch((e) => e) as Error;
+    expect(writeErr.message).toMatch(/UploadPart network failure/);
+
+    // Adapter does NOT auto-abort on write-time failure — caller must.
+    expect(abortCallCount).toBe(0);
+
+    // Caller explicitly aborts.
+    await stream.abort();
+    expect(abortCallCount).toBe(1);
+
+    // Object must not appear in the store.
+    expect(store.objects.has("p/obj.seg")).toBe(false);
+  });
 });
