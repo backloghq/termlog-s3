@@ -144,10 +144,11 @@ describe.skipIf(!integration)("TermLog + S3Backend (real S3)", () => {
     const pfx = `${basePrefix}compact-test/`;
     const idx = await makeIndex(pfx);
 
-    // Add many documents to trigger segment creation.
+    // Add many documents and flush so search sees them (default flushThreshold=1000).
     for (let i = 0; i < 20; i++) {
       await idx.add(`doc-${i}`, `document ${i} search keyword`);
     }
+    await idx.flush();
 
     const results = await idx.search("keyword");
     expect(results.length).toBe(20);
