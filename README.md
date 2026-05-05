@@ -112,6 +112,34 @@ npm run test:coverage  # Tests with coverage
 npm run test:integration  # Real S3 tests (requires S3_INTEGRATION=1 + credentials)
 ```
 
+### Integration tests in CI
+
+The CI `integration` job runs the full integration suite (including the 1500-object pagination stress test) against a MinIO container on every push — no AWS credentials, no cost. It runs after the unit-test matrix passes (`needs: test`).
+
+### Local integration testing
+
+To run against MinIO locally:
+
+```bash
+docker run -d --name minio -p 9000:9000 \
+  -e MINIO_ROOT_USER=minioadmin -e MINIO_ROOT_PASSWORD=minioadmin \
+  minio/minio server /data
+
+AWS_ACCESS_KEY_ID=minioadmin AWS_SECRET_ACCESS_KEY=minioadmin \
+  aws --endpoint-url http://localhost:9000 s3 mb s3://termlog-test
+
+S3_INTEGRATION=1 S3_INTEGRATION_SLOW=1 \
+  S3_TEST_BUCKET=termlog-test S3_TEST_ENDPOINT=http://localhost:9000 \
+  npm run test:integration
+```
+
+To run against real AWS S3 (opt-in, costs money):
+
+```bash
+S3_INTEGRATION=1 S3_TEST_BUCKET=my-bucket S3_TEST_REGION=us-east-1 \
+  AWS_PROFILE=my-profile npm run test:integration
+```
+
 ### Integration test env vars
 
 | Var | Required | Description |
