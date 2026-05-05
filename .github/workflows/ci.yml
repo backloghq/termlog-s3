@@ -15,9 +15,9 @@ jobs:
         node-version: [22, 24, 25]
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v6
         with:
           node-version: ${{ matrix.node-version }}
           cache: npm
@@ -39,9 +39,9 @@ jobs:
     needs: test
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v6
         with:
           node-version: 22
           cache: npm
@@ -52,7 +52,7 @@ jobs:
             -p 9000:9000 -p 9001:9001 \
             -e MINIO_ROOT_USER=minioadmin \
             -e MINIO_ROOT_PASSWORD=minioadmin \
-            minio/minio server /data --console-address ":9001"
+            minio/minio:RELEASE.2025-10-15T17-29-55Z server /data --console-address ":9001"
           for i in {1..30}; do
             if curl -fs http://localhost:9000/minio/health/live > /dev/null 2>&1; then
               echo "MinIO ready"
